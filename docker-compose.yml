@@ -1,0 +1,43 @@
+version: '3'
+services:
+
+  practicas-db:
+    image: postgres:15.3
+    container_name: practicas-db
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=practicas-ufps-nestjs
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+
+  back-end:
+    build:
+      context: ./practicas-ufps-back-nestjs
+      dockerfile: Dockerfile
+    container_name: back-end
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - BD_HOST=practicas-db
+    depends_on:
+      - practicas-db
+    env_file:
+      - ./practicas-ufps-back-nestjs/.env
+
+  front-end:
+    build:
+      context: ./practicas-ufps-front-end
+      dockerfile: Dockerfile
+    container_name: front-end
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      - VITE_APP_API_URL=http://back-end:3000
+    depends_on:
+      - back-end
